@@ -12,8 +12,6 @@ struct SFSymbolsProviderPlugin: BuildToolPlugin {
         let sourceDir = sourceModule.directory
         let outputDir = context.pluginWorkDirectory
         
-        // Find the SFSymbolsProvider package directory (where Resources/ is located)
-        // The plugin package is always in the dependency graph
         let sfSymbolsProviderPackage = context.package.dependencies.first { dep in
             let name = dep.package.displayName.lowercased()
             return name == "sfsymbolsprovider" || name == "sf-symbols-provider"
@@ -28,13 +26,13 @@ struct SFSymbolsProviderPlugin: BuildToolPlugin {
             "--resources", resourcesDir
         ]
         
-        // Optional: user can override with custom sfsymbols.json
         let configPath = context.package.directory.appending("sfsymbols.json")
         if FileManager.default.fileExists(atPath: configPath.string) {
             arguments.append(contentsOf: ["--config", configPath] as [CustomStringConvertible])
         }
         
         let xcassetsPath = outputDir.appending("GeneratedIcons.xcassets")
+        let compiledBundlePath = outputDir.appending("SFSymbolsProviderIcons.bundle")
         
         return [
             .buildCommand(
@@ -42,7 +40,7 @@ struct SFSymbolsProviderPlugin: BuildToolPlugin {
                 executable: tool.path,
                 arguments: arguments,
                 inputFiles: sourceModule.sourceFiles.map { $0.path },
-                outputFiles: [xcassetsPath]
+                outputFiles: [xcassetsPath, compiledBundlePath]
             )
         ]
     }

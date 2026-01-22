@@ -62,9 +62,37 @@ struct YourApp: App {
 }
 ```
 
-### For Xcode Projects
+### For Xcode Projects (iOS/watchOS/tvOS)
 
-Add the package via File > Add Package Dependencies..., then apply the plugin to your target in Build Phases.
+Due to a limitation in how Xcode handles SPM build tool plugin outputs, iOS builds require an additional setup step:
+
+1. Add the package via **File > Add Package Dependencies...**
+2. In your target's **Build Phases**, add a new **Run Script Phase** (after "Compile Sources")
+3. Add the following script:
+
+```bash
+XCASSETS_PATHS=(
+    "${BUILD_DIR}/../../SourcePackages/plugins/sf-symbols-provider.output/${TARGETNAME}/SFSymbolsProviderPlugin/GeneratedIcons.xcassets"
+    "${BUILD_DIR}/../../SourcePackages/plugins/sfsymbolsprovider.output/${TARGETNAME}/SFSymbolsProviderPlugin/GeneratedIcons.xcassets"
+)
+
+for XCASSETS_PATH in "${XCASSETS_PATHS[@]}"; do
+    if [ -d "$XCASSETS_PATH" ]; then
+        TEMP_BUNDLE="${DERIVED_FILE_DIR}/SFSymbolsProviderIcons.bundle"
+        mkdir -p "$TEMP_BUNDLE"
+        xcrun actool "$XCASSETS_PATH" --compile "$TEMP_BUNDLE" --platform "${PLATFORM_NAME}" --minimum-deployment-target "${IPHONEOS_DEPLOYMENT_TARGET:-15.0}" --output-format human-readable-text 2>/dev/null
+        if [ -f "$TEMP_BUNDLE/Assets.car" ]; then
+            mkdir -p "${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
+            cp -R "$TEMP_BUNDLE" "${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/"
+        fi
+        break
+    fi
+done
+```
+
+4. Set **"Based on dependency analysis"** to unchecked (run every build)
+
+> **Note**: macOS targets built with `swift build` work without this extra step.
 
 ## Usage
 
@@ -181,6 +209,7 @@ By default, SFSymbolsProvider uses bundled icons. To use custom icon paths (e.g.
 
 ## Known Limitations
 
+- **Xcode iOS builds require setup** - SPM plugin outputs aren't automatically bundled for iOS. See [Xcode Projects setup](#for-xcode-projects-ioswatchostvos) above.
 - **No Duotone support** - Phosphor Duotone icons require special two-color rendering (planned for v2.0)
 - **String literals only** - Dynamic icon names like `Image(icon: variable)` are not detected at build time
 - **SwiftUI only** - No UIKit/AppKit API provided

@@ -116,7 +116,9 @@ enum SFSymbolsProviderTool {
         generateXcassets(
             icons: validation.valid,
             config: generatorConfig,
-            outputDir: outputURL
+            outputDir: outputURL,
+            platform: args["platform"],
+            deploymentTarget: args["deployment-target"]
         )
     }
     
@@ -182,14 +184,18 @@ enum SFSymbolsProviderTool {
         generateXcassets(
             icons: validation.valid,
             config: generatorConfig,
-            outputDir: outputURL
+            outputDir: outputURL,
+            platform: args["platform"],
+            deploymentTarget: args["deployment-target"]
         )
     }
     
     static func generateXcassets(
         icons: [String],
         config: AssetGeneratorConfig,
-        outputDir: URL
+        outputDir: URL,
+        platform: String? = nil,
+        deploymentTarget: String? = nil
     ) {
         let xcassetsDir = outputDir.appendingPathComponent("GeneratedIcons.xcassets")
         let fileManager = FileManager.default
@@ -231,6 +237,135 @@ enum SFSymbolsProviderTool {
             let contentsURL = imagesetDir.appendingPathComponent("Contents.json")
             try? contentsJson.write(to: contentsURL, atomically: true, encoding: .utf8)
         }
+        
+        compileAssetCatalog(xcassetsDir: xcassetsDir, outputDir: outputDir, platform: platform, deploymentTarget: deploymentTarget)
+    }
+    
+    static func compileAssetCatalog(xcassetsDir: URL, outputDir: URL, platform: String?, deploymentTarget: String?) {
+        let targetPlatform = platform 
+            ?? ProcessInfo.processInfo.environment["PLATFORM_NAME"]
+            ?? detectPlatformFromSDK()
+            ?? detectPlatformFromSystem()
+        
+        let minDeploymentTarget = deploymentTarget
+            ?? getDeploymentTargetFromEnvironment(platform: targetPlatform)
+            ?? defaultDeploymentTarget(for: targetPlatform)
+        
+        let bundleDir = outputDir.appendingPathComponent("SFSymbolsProviderIcons.bundle")
+        let fileManager = FileManager.default
+        
+        try? fileManager.removeItem(at: bundleDir)
+        try? fileManager.createDirectory(at: bundleDir, withIntermediateDirectories: true)
+        
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
+        
+        let arguments = [
+            "actool",
+            xcassetsDir.path,
+            "--compile", bundleDir.path,
+            "--platform", targetPlatform,
+            "--minimum-deployment-target", minDeploymentTarget,
+            "--output-format", "human-readable-text"
+        ]
+        
+        process.arguments = arguments
+        
+        let pipe = Pipe()
+        process.standardError = pipe
+        process.standardOutput = pipe
+        
+        do {
+            try process.run()
+            process.waitUntilExit()
+            
+            if process.terminationStatus != 0 {
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                let output = String(data: data, encoding: .utf8) ?? ""
+                fputs("warning: actool compilation failed (status \(process.terminationStatus)): \(output)\n", stderr)
+                fputs("warning: Falling back to uncompiled xcassets\n", stderr)
+            }
+        } catch {
+            fputs("warning: Failed to run actool: \(error.localizedDescription)\n", stderr)
+            fputs("warning: Falling back to uncompiled xcassets\n", stderr)
+        }
+    }
+    
+    static func detectPlatformFromSDK() -> String? {
+        if let sdkName = ProcessInfo.processInfo.environment["SDK_NAME"] {
+            if sdkName.contains("iphoneos") { return "iphoneos" }
+            if sdkName.contains("iphonesimulator") { return "iphonesimulator" }
+            if sdkName.contains("macosx") { return "macosx" }
+            if sdkName.contains("watchos") { return "watchos" }
+            if sdkName.contains("watchsimulator") { return "watchsimulator" }
+            if sdkName.contains("appletvos") { return "appletvos" }
+            if sdkName.contains("appletvsimulator") { return "appletvsimulator" }
+            if sdkName.contains("xros") { return "xros" }
+            if sdkName.contains("xrsimulator") { return "xrsimulator" }
+        }
+        return nil
+    }
+    
+    static func defaultDeploymentTarget(for platform: String) -> String {
+        switch platform {
+        case "macosx": return "12.0"
+        case "iphoneos", "iphonesimulator": return "15.0"
+        case "watchos", "watchsimulator": return "8.0"
+        case "appletvos", "appletvsimulator": return "15.0"
+        case "xros", "xrsimulator": return "1.0"
+        default: return "15.0"
+        }
+    }
+    
+    static func detectPlatformFromSystem() -> String {
+        #if os(macOS)
+        return "macosx"
+        #elseif os(iOS)
+        #if targetEnvironment(simulator)
+        return "iphonesimulator"
+        #else
+        return "iphoneos"
+        #endif
+        #elseif os(watchOS)
+        #if targetEnvironment(simulator)
+        return "watchsimulator"
+        #else
+        return "watchos"
+        #endif
+        #elseif os(tvOS)
+        #if targetEnvironment(simulator)
+        return "appletvsimulator"
+        #else
+        return "appletvos"
+        #endif
+        #elseif os(visionOS)
+        #if targetEnvironment(simulator)
+        return "xrsimulator"
+        #else
+        return "xros"
+        #endif
+        #else
+        return "macosx"
+        #endif
+    }
+    
+    static func getDeploymentTargetFromEnvironment(platform: String) -> String? {
+        let envVars: [String: String] = [
+            "iphoneos": "IPHONEOS_DEPLOYMENT_TARGET",
+            "iphonesimulator": "IPHONEOS_DEPLOYMENT_TARGET",
+            "macosx": "MACOSX_DEPLOYMENT_TARGET",
+            "watchos": "WATCHOS_DEPLOYMENT_TARGET",
+            "watchsimulator": "WATCHOS_DEPLOYMENT_TARGET",
+            "appletvos": "TVOS_DEPLOYMENT_TARGET",
+            "appletvsimulator": "TVOS_DEPLOYMENT_TARGET",
+            "xros": "XROS_DEPLOYMENT_TARGET",
+            "xrsimulator": "XROS_DEPLOYMENT_TARGET"
+        ]
+        
+        if let envVar = envVars[platform] {
+            return ProcessInfo.processInfo.environment[envVar]
+        }
+        return nil
     }
 }
 
