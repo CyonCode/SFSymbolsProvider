@@ -66,7 +66,7 @@ struct YourApp: App {
 
 Due to a limitation in how Xcode handles SPM build tool plugin outputs, iOS builds require a one-time setup:
 
-1. Add the package via **File > Add Package Dependencies...**
+1. Add the package via **File > Add Package Dependencies...** and select **SFSymbolsProvider** library only
 2. In your target's **Build Phases**, add a new **Run Script Phase** (after "Compile Sources")
 3. Add the following script:
 
