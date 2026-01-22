@@ -19,7 +19,7 @@ fi
 TOOL="${DERIVED_FILE_DIR}/SFSymbolsProviderTool"
 if [ ! -f "$TOOL" ]; then
     echo "Building SFSymbolsProviderTool..."
-    env -i PATH="$PATH" HOME="$HOME" swift build --package-path "$PKG" --product SFSymbolsProviderTool -c release
+    env -i PATH="$PATH" HOME="$HOME" swift build --package-path "$PKG" --product SFSymbolsProviderTool -c release --disable-sandbox
     cp "$PKG/.build/release/SFSymbolsProviderTool" "$TOOL"
 fi
 
