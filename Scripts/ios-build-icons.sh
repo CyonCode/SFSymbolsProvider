@@ -16,11 +16,10 @@ fi
 [ -z "$PKG" ] || [ ! -d "$PKG/Resources" ] && exit 0
 
 # Build the tool (cached after first build)
-TOOL="${DERIVED_FILE_DIR}/SFSymbolsProviderTool"
+TOOL="$PKG/.build/release/SFSymbolsProviderTool"
 if [ ! -f "$TOOL" ]; then
     echo "Building SFSymbolsProviderTool..."
     env -i PATH="$PATH" HOME="$HOME" swift build --package-path "$PKG" --product SFSymbolsProviderTool -c release --disable-sandbox
-    cp "$PKG/.build/release/SFSymbolsProviderTool" "$TOOL"
 fi
 
 # Generate icon assets from source code
