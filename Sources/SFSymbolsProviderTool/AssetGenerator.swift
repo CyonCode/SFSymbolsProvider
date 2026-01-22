@@ -28,7 +28,11 @@ public enum AssetGenerator {
         switch parsed.provider {
         case .phosphor:
             let weight = parsed.weight ?? "regular"
-            return "\(config.phosphorPath)/SVGs/\(weight)/\(parsed.name).svg"
+            if weight == "regular" {
+                return "\(config.phosphorPath)/SVGs/\(weight)/\(parsed.name).svg"
+            } else {
+                return "\(config.phosphorPath)/SVGs/\(weight)/\(parsed.name)-\(weight).svg"
+            }
         case .ionicons:
             let variant = parsed.variant
             switch variant {

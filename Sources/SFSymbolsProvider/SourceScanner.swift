@@ -90,7 +90,7 @@ public struct IconName: Equatable {
 
 public enum SourceScanner {
     
-    private static let imagePattern = #"Image\s*\(\s*"((?:ph|ion)\.[a-z0-9\-\.]+)"\s*\)"#
+    private static let imagePattern = #"Image\s*\(\s*(?:icon\s*:\s*)?"((?:ph|ion)\.[a-z0-9\-\.]+)"\s*\)"#
     private static let lineCommentPattern = #"//.*$"#
     private static let blockCommentPattern = #"/\*[\s\S]*?\*/"#
     

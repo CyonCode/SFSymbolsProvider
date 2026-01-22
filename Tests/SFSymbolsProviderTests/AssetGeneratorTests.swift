@@ -14,10 +14,10 @@ final class AssetGeneratorTests: XCTestCase {
         XCTAssertEqual(path1, "/path/to/phosphor/SVGs/regular/house.svg")
         
         let path2 = AssetGenerator.mapIconPath("ph.house.fill", config: config)
-        XCTAssertEqual(path2, "/path/to/phosphor/SVGs/fill/house.svg")
+        XCTAssertEqual(path2, "/path/to/phosphor/SVGs/fill/house-fill.svg")
         
         let path3 = AssetGenerator.mapIconPath("ph.gear.bold", config: config)
-        XCTAssertEqual(path3, "/path/to/phosphor/SVGs/bold/gear.svg")
+        XCTAssertEqual(path3, "/path/to/phosphor/SVGs/bold/gear-bold.svg")
     }
     
     // Test 2: Map Ionicons icon paths

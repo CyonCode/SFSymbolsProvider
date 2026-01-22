@@ -15,6 +15,9 @@ let package = Package(
             name: "ExampleApp",
             dependencies: [
                 .product(name: "SFSymbolsProvider", package: "SF-Symbols-Provider")
+            ],
+            resources: [
+                .process("Info.plist")
             ]
         )
     ]
