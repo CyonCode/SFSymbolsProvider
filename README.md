@@ -75,7 +75,9 @@ Due to a limitation in how Xcode handles SPM build tool plugin outputs, iOS buil
 "${BUILD_DIR}/../../SourcePackages/checkouts/SFSymbolsProvider/Scripts/ios-build-icons.sh"
 ```
 
-5. Uncheck **"Based on dependency analysis"** (ensures script runs every build)
+5. Configure when the script runs (choose one):
+   - **Option A**: Uncheck **"Based on dependency analysis"** — script runs every build (recommended for development)
+   - **Option B**: Add Output File `$(DERIVED_FILE_DIR)/SFSymbolsProviderIcons.bundle` — faster incremental builds, but requires Clean Build when icon usage changes
 
 > **Note**: macOS targets built with `swift build` work without this extra step. The first build compiles the icon generation tool (adds ~5-10s).
 
