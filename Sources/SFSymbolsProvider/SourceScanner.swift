@@ -89,14 +89,16 @@ public struct IconName: Equatable {
 }
 
 public enum SourceScanner {
-    
-    private static let imagePattern = #"Image\s*\(\s*(?:icon\s*:\s*)?"((?:ph|ion)\.[a-z0-9\-\.]+)"\s*\)"#
-    private static let lineCommentPattern = #"//.*$"#
+
+    /// Matches any string literal starting with "ph." or "ion."
+    /// This catches: Image(icon: "ph.house"), IconImage(name: "ph.house"), "ph.house", etc.
+    private static let iconStringPattern = #""((?:ph|ion)\.[a-z0-9\-\.]+)""#
     private static let blockCommentPattern = #"/\*[\s\S]*?\*/"#
-    
+
     public static func scan(source: String) -> [String] {
         var cleanedSource = source
-        
+
+        // Remove block comments
         if let blockRegex = try? NSRegularExpression(pattern: blockCommentPattern, options: []) {
             cleanedSource = blockRegex.stringByReplacingMatches(
                 in: cleanedSource,
@@ -105,28 +107,30 @@ public enum SourceScanner {
                 withTemplate: ""
             )
         }
-        
+
         let lines = cleanedSource.components(separatedBy: .newlines)
         var icons: [String] = []
-        
-        guard let imageRegex = try? NSRegularExpression(pattern: imagePattern, options: [.caseInsensitive]) else {
+
+        guard let iconRegex = try? NSRegularExpression(pattern: iconStringPattern, options: [.caseInsensitive]) else {
             return []
         }
-        
+
         for line in lines {
+            // Skip line comments
             let trimmedLine = line.trimmingCharacters(in: .whitespaces)
             if trimmedLine.hasPrefix("//") {
                 continue
             }
-            
+
+            // Remove inline comments
             var processedLine = line
             if let commentRange = line.range(of: "//") {
                 processedLine = String(line[..<commentRange.lowerBound])
             }
-            
+
             let range = NSRange(processedLine.startIndex..., in: processedLine)
-            let matches = imageRegex.matches(in: processedLine, options: [], range: range)
-            
+            let matches = iconRegex.matches(in: processedLine, options: [], range: range)
+
             for match in matches {
                 if let iconRange = Range(match.range(at: 1), in: processedLine) {
                     let iconName = String(processedLine[iconRange])
@@ -136,7 +140,7 @@ public enum SourceScanner {
                 }
             }
         }
-        
+
         return icons
     }
     
