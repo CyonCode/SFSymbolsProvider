@@ -19,11 +19,16 @@ extension IconName {
     }
 }
 
+public enum SFSymbolsProviderConfig {
+    public static var resourceBundle: Bundle = .main
+}
+
 public extension Image {
-    init?(icon iconName: String, bundle: Bundle = .main) {
+    init?(icon iconName: String, bundle: Bundle? = nil) {
         guard let parsed = IconNameParser.parse(iconName) else {
             return nil
         }
-        self.init(parsed.assetName, bundle: bundle)
+        let targetBundle = bundle ?? SFSymbolsProviderConfig.resourceBundle
+        self.init(parsed.assetName, bundle: targetBundle)
     }
 }

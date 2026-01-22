@@ -33,17 +33,37 @@ dependencies: [
 ]
 ```
 
-Then add it to your target:
+Then add it to your target with the plugin:
 
 ```swift
-.target(
+.executableTarget(
     name: "YourApp",
     dependencies: ["SFSymbolsProvider"],
-    plugins: ["SFSymbolsProviderPlugin"]
+    plugins: [
+        .plugin(name: "SFSymbolsProviderPlugin", package: "SFSymbolsProvider")
+    ]
 )
 ```
 
-Or in Xcode: File > Add Package Dependencies... and enter the repository URL.
+### For SPM Packages
+
+Configure the resource bundle in your app's entry point:
+
+```swift
+import SFSymbolsProvider
+
+@main
+struct YourApp: App {
+    init() {
+        SFSymbolsProviderConfig.resourceBundle = .module
+    }
+    // ...
+}
+```
+
+### For Xcode Projects
+
+Add the package via File > Add Package Dependencies..., then apply the plugin to your target in Build Phases.
 
 ## Configuration
 

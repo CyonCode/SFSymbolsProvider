@@ -16,8 +16,8 @@ let package = Package(
             dependencies: [
                 .product(name: "SFSymbolsProvider", package: "SF-Symbols-Provider")
             ],
-            resources: [
-                .process("Info.plist")
+            plugins: [
+                .plugin(name: "SFSymbolsProviderPlugin", package: "SF-Symbols-Provider")
             ]
         )
     ]
