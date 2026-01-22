@@ -2,97 +2,80 @@ import SwiftUI
 import SFSymbolsProvider
 
 struct ContentView: View {
-    @State private var selectedTab = 0
-    
     var body: some View {
-        TabView(selection: $selectedTab) {
-            PhosphorIconsView()
-                .tabItem {
-                    Label("Phosphor", systemImage: "square.grid.2x2")
-                }
-                .tag(0)
-            
-            IoniconsView()
-                .tabItem {
-                    Label("Ionicons", systemImage: "square.grid.3x3")
-                }
-                .tag(1)
+        TabView {
+            IconGridView(
+                title: "Phosphor Icons",
+                icons: [
+                    "ph.house", "ph.house.fill", "ph.house.bold",
+                    "ph.gear", "ph.gear.fill",
+                    "ph.star", "ph.star.fill",
+                    "ph.heart", "ph.heart.fill",
+                    "ph.user", "ph.user.fill"
+                ],
+                prefix: "ph.",
+                tintColor: .blue
+            )
+            .tabItem { Label("Phosphor", systemImage: "square.grid.2x2") }
+
+            IconGridView(
+                title: "Ionicons",
+                icons: [
+                    "ion.home", "ion.home.outline", "ion.home.sharp",
+                    "ion.settings", "ion.settings.outline",
+                    "ion.star", "ion.star.outline",
+                    "ion.heart", "ion.heart.outline",
+                    "ion.person", "ion.person.outline"
+                ],
+                prefix: "ion.",
+                tintColor: .green
+            )
+            .tabItem { Label("Ionicons", systemImage: "square.grid.3x3") }
         }
     }
 }
 
-struct PhosphorIconsView: View {
-    let icons = [
-        "ph.house", "ph.house.fill", "ph.house.bold",
-        "ph.gear", "ph.gear.fill",
-        "ph.star", "ph.star.fill",
-        "ph.heart", "ph.heart.fill",
-        "ph.user", "ph.user.fill"
-    ]
-    
+struct IconGridView: View {
+    let title: String
+    let icons: [String]
+    let prefix: String
+    let tintColor: Color
+
     var body: some View {
         NavigationView {
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))], spacing: 20) {
                     ForEach(icons, id: \.self) { iconName in
-                        VStack {
-                            if let image = Image(icon: iconName) {
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 32, height: 32)
-                                    .foregroundStyle(.blue)
-                            } else {
-                                Image(systemName: "questionmark.square")
-                                    .foregroundStyle(.red)
-                            }
-                            Text(iconName.replacingOccurrences(of: "ph.", with: ""))
-                                .font(.caption2)
-                                .lineLimit(1)
-                        }
+                        IconCell(iconName: iconName, prefix: prefix, tintColor: tintColor)
                     }
                 }
                 .padding()
             }
-            .navigationTitle("Phosphor Icons")
+            .navigationTitle(title)
         }
     }
 }
 
-struct IoniconsView: View {
-    let icons = [
-        "ion.home", "ion.home.outline", "ion.home.sharp",
-        "ion.settings", "ion.settings.outline",
-        "ion.star", "ion.star.outline",
-        "ion.heart", "ion.heart.outline",
-        "ion.person", "ion.person.outline"
-    ]
-    
+struct IconCell: View {
+    let iconName: String
+    let prefix: String
+    let tintColor: Color
+
     var body: some View {
-        NavigationView {
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))], spacing: 20) {
-                    ForEach(icons, id: \.self) { iconName in
-                        VStack {
-                            if let image = Image(icon: iconName) {
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 32, height: 32)
-                                    .foregroundStyle(.green)
-                            } else {
-                                Image(systemName: "questionmark.square")
-                                    .foregroundStyle(.red)
-                            }
-                            Text(iconName.replacingOccurrences(of: "ion.", with: ""))
-                                .font(.caption2)
-                                .lineLimit(1)
-                        }
-                    }
-                }
-                .padding()
+        VStack {
+            if let image = Image(icon: iconName) {
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 32, height: 32)
+                    .foregroundStyle(tintColor)
+            } else {
+                Image(systemName: "questionmark.square")
+                    .foregroundStyle(.red)
             }
-            .navigationTitle("Ionicons")
+            Text(iconName.replacingOccurrences(of: prefix, with: ""))
+                .font(.caption2)
+                .lineLimit(1)
         }
     }
 }

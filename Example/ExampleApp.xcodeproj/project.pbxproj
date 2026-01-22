@@ -54,6 +54,7 @@
 			buildConfigurationList = A7000003 /* Build configuration list for PBXNativeTarget "ExampleApp" */;
 			buildPhases = (
 				A6000002 /* Sources */,
+				F5724E382F223961002D4949 /* SFSymbolsProvider */,
 				A4000001 /* Frameworks */,
 				A6000003 /* Resources */,
 			);
@@ -112,6 +113,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F5724E382F223961002D4949 /* SFSymbolsProvider */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SFSymbolsProvider;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/../Scripts/ios-build-icons.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A6000002 /* Sources */ = {

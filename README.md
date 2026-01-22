@@ -64,35 +64,19 @@ struct YourApp: App {
 
 ### For Xcode Projects (iOS/watchOS/tvOS)
 
-Due to a limitation in how Xcode handles SPM build tool plugin outputs, iOS builds require an additional setup step:
+Due to a limitation in how Xcode handles SPM build tool plugin outputs, iOS builds require a one-time setup:
 
 1. Add the package via **File > Add Package Dependencies...**
 2. In your target's **Build Phases**, add a new **Run Script Phase** (after "Compile Sources")
 3. Add the following script:
 
 ```bash
-XCASSETS_PATHS=(
-    "${BUILD_DIR}/../../SourcePackages/plugins/sf-symbols-provider.output/${TARGETNAME}/SFSymbolsProviderPlugin/GeneratedIcons.xcassets"
-    "${BUILD_DIR}/../../SourcePackages/plugins/sfsymbolsprovider.output/${TARGETNAME}/SFSymbolsProviderPlugin/GeneratedIcons.xcassets"
-)
-
-for XCASSETS_PATH in "${XCASSETS_PATHS[@]}"; do
-    if [ -d "$XCASSETS_PATH" ]; then
-        TEMP_BUNDLE="${DERIVED_FILE_DIR}/SFSymbolsProviderIcons.bundle"
-        mkdir -p "$TEMP_BUNDLE"
-        xcrun actool "$XCASSETS_PATH" --compile "$TEMP_BUNDLE" --platform "${PLATFORM_NAME}" --minimum-deployment-target "${IPHONEOS_DEPLOYMENT_TARGET:-15.0}" --output-format human-readable-text 2>/dev/null
-        if [ -f "$TEMP_BUNDLE/Assets.car" ]; then
-            mkdir -p "${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
-            cp -R "$TEMP_BUNDLE" "${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/"
-        fi
-        break
-    fi
-done
+"${BUILD_DIR}/../../SourcePackages/checkouts/SFSymbolsProvider/Scripts/ios-build-icons.sh"
 ```
 
-4. Set **"Based on dependency analysis"** to unchecked (run every build)
+4. Uncheck **"Based on dependency analysis"** (ensures script runs every build)
 
-> **Note**: macOS targets built with `swift build` work without this extra step.
+> **Note**: macOS targets built with `swift build` work without this extra step. The first build compiles the icon generation tool (adds ~5-10s).
 
 ## Usage
 
@@ -214,6 +198,27 @@ By default, SFSymbolsProvider uses bundled icons. To use custom icon paths (e.g.
 - **String literals only** - Dynamic icon names like `Image(icon: variable)` are not detected at build time
 - **SwiftUI only** - No UIKit/AppKit API provided
 - **No Symbol Effects** - iOS 17+ symbol animations are not supported
+
+## FAQ
+
+### Icons not showing on iOS Simulator/Device?
+
+1. **Verify the Run Script Phase** is after "Compile Sources" in Build Phases
+2. **Ensure "Based on dependency analysis" is unchecked** - the script must run every build
+3. **Clean and rebuild** - Product > Clean Build Folder (⇧⌘K), then rebuild
+4. **Check the bundle exists** - Look for `SFSymbolsProviderIcons.bundle` in your app's .app folder
+
+### First build takes a long time?
+
+The first build compiles the icon generation tool from source. Subsequent builds reuse the cached tool and only take a few seconds.
+
+### Script fails with "swift build" errors?
+
+The script uses `env -i` to isolate the Swift build from Xcode's environment. If you still have issues, ensure you have Swift command line tools installed: `xcode-select --install`
+
+### How do I verify the script is working?
+
+Check the Build Log (⌘8) for "com.apple.actool.compilation-results" which shows the path to the generated Assets.car file.
 
 ## Example App
 
