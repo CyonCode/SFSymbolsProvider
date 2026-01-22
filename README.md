@@ -67,14 +67,15 @@ struct YourApp: App {
 Due to a limitation in how Xcode handles SPM build tool plugin outputs, iOS builds require a one-time setup:
 
 1. Add the package via **File > Add Package Dependencies...** and select **SFSymbolsProvider** library only
-2. In your target's **Build Phases**, add a new **Run Script Phase** (after "Compile Sources")
-3. Add the following script:
+2. In **Build Settings**, search for **"User Script Sandboxing"** and set it to **No**
+3. In your target's **Build Phases**, add a new **Run Script Phase** (after "Compile Sources")
+4. Add the following script:
 
 ```bash
 "${BUILD_DIR}/../../SourcePackages/checkouts/SFSymbolsProvider/Scripts/ios-build-icons.sh"
 ```
 
-4. Uncheck **"Based on dependency analysis"** (ensures script runs every build)
+5. Uncheck **"Based on dependency analysis"** (ensures script runs every build)
 
 > **Note**: macOS targets built with `swift build` work without this extra step. The first build compiles the icon generation tool (adds ~5-10s).
 
