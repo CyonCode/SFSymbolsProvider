@@ -29,9 +29,9 @@ public enum AssetGenerator {
         case .phosphor:
             let weight = parsed.weight ?? "regular"
             if weight == "regular" {
-                return "\(config.phosphorPath)/SVGs/\(weight)/\(parsed.name).svg"
+                return "\(config.phosphorPath)/\(weight)/\(parsed.name).svg"
             } else {
-                return "\(config.phosphorPath)/SVGs/\(weight)/\(parsed.name)-\(weight).svg"
+                return "\(config.phosphorPath)/\(weight)/\(parsed.name)-\(weight).svg"
             }
         case .ionicons:
             let variant = parsed.variant

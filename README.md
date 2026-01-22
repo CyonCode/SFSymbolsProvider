@@ -8,6 +8,7 @@ A Swift library that provides an **SF Symbols-like API** for third-party icon li
 
 ## Features
 
+- **Zero Configuration** - Icons are bundled with the package; just add the dependency and start using icons
 - **SF Symbols-like API** - Use `Image(icon: "ph.house")` just like `Image(systemName: "house")`
 - **On-demand packaging** - Only icons used in your code are bundled into your app
 - **SPM Build Tool Plugin** - Automatic source scanning and asset generation at build time
@@ -29,7 +30,7 @@ Add SFSymbolsProvider to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/user/SFSymbolsProvider.git", from: "1.0.0")
+    .package(url: "https://github.com/CyonCode/SFSymbolsProvider.git", from: "1.0.0")
 ]
 ```
 
@@ -64,22 +65,6 @@ struct YourApp: App {
 ### For Xcode Projects
 
 Add the package via File > Add Package Dependencies..., then apply the plugin to your target in Build Phases.
-
-## Configuration
-
-Create a `sfsymbols.json` file in your package/project root:
-
-```json
-{
-    "phosphorPath": "/path/to/phosphor-icons",
-    "ioniconsPath": "/path/to/ionicons.designerpack"
-}
-```
-
-### Icon Library Setup
-
-1. **Phosphor Icons**: Download from [phosphoricons.com](https://phosphoricons.com) or clone [github.com/phosphor-icons/core](https://github.com/phosphor-icons/core)
-2. **Ionicons**: Download from [ionic.io/ionicons](https://ionic.io/ionicons) or use the designer pack
 
 ## Usage
 
@@ -183,13 +168,23 @@ public extension Image {
 3. **Asset Generation**: Only the icons you use are copied to a generated `.xcassets` catalog
 4. **Template Rendering**: Icons are configured with `template-rendering-intent` for color customization
 
+## Advanced Configuration
+
+By default, SFSymbolsProvider uses bundled icons. To use custom icon paths (e.g., for newer icon versions), create a `sfsymbols.json` file in your package/project root:
+
+```json
+{
+    "phosphorPath": "/path/to/phosphor-icons",
+    "ioniconsPath": "/path/to/ionicons.designerpack"
+}
+```
+
 ## Known Limitations
 
 - **No Duotone support** - Phosphor Duotone icons require special two-color rendering (planned for v2.0)
 - **String literals only** - Dynamic icon names like `Image(icon: variable)` are not detected at build time
 - **SwiftUI only** - No UIKit/AppKit API provided
 - **No Symbol Effects** - iOS 17+ symbol animations are not supported
-- **No network loading** - All icons must be available locally at build time
 
 ## Example App
 

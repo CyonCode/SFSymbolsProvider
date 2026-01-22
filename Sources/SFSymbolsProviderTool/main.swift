@@ -81,18 +81,26 @@ enum SFSymbolsProviderTool {
             return
         }
         
-        var config: Config?
+        var phosphorPath = ""
+        var ioniconsPath = ""
+        
+        if let resourcesDir = args["resources"] {
+            phosphorPath = resourcesDir + "/Phosphor"
+            ioniconsPath = resourcesDir + "/Ionicons"
+        }
+        
         if let configPath = args["config"] {
             let configURL = URL(fileURLWithPath: configPath)
             if let data = try? Data(contentsOf: configURL),
                let decoded = try? JSONDecoder().decode(Config.self, from: data) {
-                config = decoded
+                if let p = decoded.phosphorPath { phosphorPath = p }
+                if let i = decoded.ioniconsPath { ioniconsPath = i }
             }
         }
         
         let generatorConfig = AssetGeneratorConfig(
-            phosphorPath: config?.phosphorPath ?? "",
-            ioniconsPath: config?.ioniconsPath ?? ""
+            phosphorPath: phosphorPath,
+            ioniconsPath: ioniconsPath
         )
         
         let validation = AssetGenerator.validateIcons(icons, config: generatorConfig)

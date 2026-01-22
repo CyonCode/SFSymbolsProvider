@@ -9,22 +9,31 @@ struct SFSymbolsProviderPlugin: BuildToolPlugin {
         }
         
         let tool = try context.tool(named: "SFSymbolsProviderTool")
-        let configPath = context.package.directory.appending("sfsymbols.json")
         let sourceDir = sourceModule.directory
         let outputDir = context.pluginWorkDirectory
+        
+        // Find the SFSymbolsProvider package directory (where Resources/ is located)
+        // The plugin package is always in the dependency graph
+        let sfSymbolsProviderPackage = context.package.dependencies.first { dep in
+            let name = dep.package.displayName.lowercased()
+            return name == "sfsymbolsprovider" || name == "sf-symbols-provider"
+        }?.package ?? context.package
+        
+        let resourcesDir = sfSymbolsProviderPackage.directory.appending("Resources")
         
         var arguments: [CustomStringConvertible] = [
             "build",
             "--source", sourceDir,
-            "--output", outputDir
+            "--output", outputDir,
+            "--resources", resourcesDir
         ]
         
+        // Optional: user can override with custom sfsymbols.json
+        let configPath = context.package.directory.appending("sfsymbols.json")
         if FileManager.default.fileExists(atPath: configPath.string) {
             arguments.append(contentsOf: ["--config", configPath] as [CustomStringConvertible])
         }
         
-        // Use buildCommand instead of prebuildCommand to allow using source-based tools
-        // We specify the xcassets directory as the output
         let xcassetsPath = outputDir.appending("GeneratedIcons.xcassets")
         
         return [
