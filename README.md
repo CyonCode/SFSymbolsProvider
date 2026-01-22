@@ -46,22 +46,6 @@ Then add it to your target with the plugin:
 )
 ```
 
-### For SPM Packages
-
-Configure the resource bundle in your app's entry point:
-
-```swift
-import SFSymbolsProvider
-
-@main
-struct YourApp: App {
-    init() {
-        SFSymbolsProviderConfig.resourceBundle = .module
-    }
-    // ...
-}
-```
-
 ### For Xcode Projects (iOS/watchOS/tvOS)
 
 Due to a limitation in how Xcode handles SPM build tool plugin outputs, iOS builds require a one-time setup:
